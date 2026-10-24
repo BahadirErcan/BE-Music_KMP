@@ -1,0 +1,13 @@
+{
+  "project": "BE-Music",
+  "platform": "ios",
+  "ios": {
+    "path": "iosApp",
+    "scheme": "iosApp",
+    "bundleId": "com.be.music.ios",
+    "configuration": "Debug"
+  },
+  "kmp": {
+    "jdkVersion": "17"
+  }
+}

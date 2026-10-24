@@ -1,0 +1,276 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		21C5234B29D9109B00A9D3AC /* iOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21C5234A29D9109B00A9D3AC /* iOSApp.swift */; };
+		21C5234D29D9109B00A9D3AC /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21C5234C29D9109B00A9D3AC /* ContentView.swift */; };
+		21C5234F29D9109B00A9D3AC /* UnityAdsBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21C5234E29D9109B00A9D3AC /* UnityAdsBridge.swift */; };
+		21C5235129D9109B00A9D3AC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 21C5235029D9109B00A9D3AC /* Assets.xcassets */; };
+		54ACC2AB29D955870066A3C0 /* ComposeApp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 54ACC2AA29D955870066A3C0 /* ComposeApp.framework */; };
+		54ACC2AC29D955870066A3C0 /* ComposeApp.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 54ACC2AA29D955870066A3C0 /* ComposeApp.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		21C5235529D9109B00A9D3AC /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				54ACC2AC29D955870066A3C0 /* ComposeApp.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		21C5234A29D9109B00A9D3AC /* iOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSApp.swift; sourceTree = "<group>"; };
+		21C5234C29D9109B00A9D3AC /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		21C5234E29D9109B00A9D3AC /* UnityAdsBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnityAdsBridge.swift; sourceTree = "<group>"; };
+		21C5235029D9109B00A9D3AC /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		54ACC2AA29D955870066A3C0 /* ComposeApp.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ComposeApp.framework; path = "../composeApp/build/xcode-frameworks/ComposeApp.framework"; sourceTree = "<group>"; };
+		7555BFEF242A651A00829A71 /* iosApp */ = {isa = PBXGroup; children = (
+			7555BFFD242A651A00829A71 /* iosApp */,
+			7555BFF3242A651A00829A71 /* Products */,
+			7B565F5D29B7BB1600D8A898 /* Config.xcconfig */,
+		); sourceTree = "<group>"; };
+		7555BFF0242A651A00829A71 /* BE-Music.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "BE-Music.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		7555BFF3242A651A00829A71 /* Products */ = {isa = PBXGroup; children = (
+			7555BFF0242A651A00829A71 /* BE-Music.app */,
+		); name = Products; sourceTree = "<group>"; };
+		7555BFF4242A651A00829A71 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		7555BFFD242A651A00829A71 /* iosApp */ = {isa = PBXGroup; children = (
+			21C5234A29D9109B00A9D3AC /* iOSApp.swift */,
+			21C5234C29D9109B00A9D3AC /* ContentView.swift */,
+			21C5234E29D9109B00A9D3AC /* UnityAdsBridge.swift */,
+			7555BFF4242A651A00829A71 /* Info.plist */,
+			21C5235029D9109B00A9D3AC /* Assets.xcassets */,
+		); path = iosApp; sourceTree = "<group>"; };
+		7B565F5D29B7BB1600D8A898 /* Config.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		7555BFFA242A651A00829A71 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				54ACC2AB29D955870066A3C0 /* ComposeApp.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		7555BFEE242A651A00829A71 = {
+			isa = PBXGroup;
+			children = (
+				7555BFEF242A651A00829A71 /* iosApp */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		21C5235A29D9109B00A9D3AC /* iosApp */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 21C5236029D9109B00A9D3AC /* Build configuration list for PBXNativeTarget "iosApp" */;
+			buildPhases = (
+				21C5235229D9109B00A9D3AC /* Kotlin Gradle framework sync */,
+				7555BFF7242A651A00829A71 /* Sources */,
+				7555BFFA242A651A00829A71 /* Frameworks */,
+				7555BFFB242A651A00829A71 /* Resources */,
+				21C5235529D9109B00A9D3AC /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = iosApp;
+			productName = iosApp;
+			productReference = 7555BFF0242A651A00829A71 /* BE-Music.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		7555BFEE242A651A00829A71 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					21C5235A29D9109B00A9D3AC = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = 21C5235F29D9109B00A9D3AC /* Build configuration list for PBXProject "iosApp" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+				tr,
+			);
+			mainGroup = 7555BFEE242A651A00829A71;
+			productRefGroup = 7555BFF3242A651A00829A71 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				21C5235A29D9109B00A9D3AC /* iosApp */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		7555BFFB242A651A00829A71 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				21C5235129D9109B00A9D3AC /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		21C5235229D9109B00A9D3AC /* Kotlin Gradle framework sync */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Kotlin Gradle framework sync";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "cd \"$SRCROOT/../composeApp\"\n\"$SRCROOT/../gradlew\" :composeApp:embedAndSignAppleFrameworkForXcode -q\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		7555BFF7242A651A00829A71 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				21C5234B29D9109B00A9D3AC /* iOSApp.swift in Sources */,
+				21C5234D29D9109B00A9D3AC /* ContentView.swift in Sources */,
+				21C5234F29D9109B00A9D3AC /* UnityAdsBridge.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		21C5235B29D9109B00A9D3AC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		21C5235C29D9109B00A9D3AC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_VERSION = 5.0;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		21C5235D29D9109B00A9D3AC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 7B565F5D29B7BB1600D8A898 /* Config.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				FRAMEWORK_SEARCH_PATHS = "$(SRCROOT)/../composeApp/build/xcode-frameworks";
+				INFOPLIST_FILE = iosApp/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(BUNDLE_ID)";
+				PRODUCT_NAME = "$(APP_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		21C5235E29D9109B00A9D3AC /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 7B565F5D29B7BB1600D8A898 /* Config.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				FRAMEWORK_SEARCH_PATHS = "$(SRCROOT)/../composeApp/build/xcode-frameworks";
+				INFOPLIST_FILE = iosApp/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(BUNDLE_ID)";
+				PRODUCT_NAME = "$(APP_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		21C5235F29D9109B00A9D3AC /* Build configuration list for PBXProject "iosApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				21C5235B29D9109B00A9D3AC /* Debug */,
+				21C5235C29D9109B00A9D3AC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		21C5236029D9109B00A9D3AC /* Build configuration list for PBXNativeTarget "iosApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				21C5235D29D9109B00A9D3AC /* Debug */,
+				21C5235E29D9109B00A9D3AC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 7555BFEE242A651A00829A71 /* Project object */;
+}

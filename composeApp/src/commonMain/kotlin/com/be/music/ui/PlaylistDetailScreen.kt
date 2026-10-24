@@ -1,0 +1,452 @@
+package com.be.music.ui
+import org.jetbrains.compose.resources.stringResource
+import com.be.music.res.Res
+import com.be.music.res.add_songs
+import com.be.music.res.add_to_playlist_menu
+import com.be.music.res.alphabetical
+import com.be.music.res.ascending
+import com.be.music.res.back
+import com.be.music.res.cancel
+import com.be.music.res.close
+import com.be.music.res.create
+import com.be.music.res.create_new_playlist
+import com.be.music.res.date_added
+import com.be.music.res.delete
+import com.be.music.res.delete_song
+import com.be.music.res.delete_song_confirm
+import com.be.music.res.descending
+import com.be.music.res.empty_playlist
+import com.be.music.res.invert
+import com.be.music.res.invert_playlist
+import com.be.music.res.invert_playlist_confirm
+import com.be.music.res.new_playlist_menu
+import com.be.music.res.no
+import com.be.music.res.no_playlists
+import com.be.music.res.play_all
+import com.be.music.res.playlist_label
+import com.be.music.res.playlist_menu_label
+import com.be.music.res.playlist_name
+import com.be.music.res.random_play
+import com.be.music.res.remove
+import com.be.music.res.remove_from_playlist
+import com.be.music.res.remove_from_playlist_confirm
+import com.be.music.res.remove_mode
+import com.be.music.res.remove_selected
+import com.be.music.res.search
+import com.be.music.res.select_song
+import com.be.music.res.sequential_play
+import com.be.music.res.song_duration
+import com.be.music.res.sort
+import com.be.music.res.yes
+
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+
+private enum class PlaylistSort { ALPHA, DURATION, ADDED }
+
+private fun String?.toPlaylistSort(): PlaylistSort = when (this) {
+    "DURATION" -> PlaylistSort.DURATION
+    "ALPHA" -> PlaylistSort.ALPHA
+    else -> PlaylistSort.ADDED
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun PlaylistDetailScreen(
+    viewModel: MusicViewModel,
+    playlistId: Int,
+    navController: NavController,
+    onBack: () -> Unit
+) {
+    val playlists by viewModel.playlistsState.collectAsState()
+    val songs by viewModel.songsState.collectAsState()
+    val isSelectionMode by viewModel.isSelectionMode.collectAsState()
+    val selectedSongIds by viewModel.selectedSongIds.collectAsState()
+
+    val currentSong by viewModel.currentSong.collectAsState()
+    val isPlaying by viewModel.isPlaying.collectAsState()
+    var showFullPlayer by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf<com.be.music.data.Song?>(null) }
+    var showRemoveFromPlaylistDialog by remember { mutableStateOf<com.be.music.data.Song?>(null) }
+    var playlistSearchQuery by remember { mutableStateOf("") }
+    var showPlayMenu by remember { mutableStateOf(false) }
+    var showSortMenu by remember { mutableStateOf(false) }
+    var showInvertConfirm by remember { mutableStateOf(false) }
+    var showPlaylistCreateDialog by remember { mutableStateOf(false) }
+    var showRemoveDialog by remember { mutableStateOf(false) }
+    // Madde 2: seçim modu çalma listesi menüsü + liste seçici diyalog
+    var showPlaylistMenu by remember { mutableStateOf(false) }
+    var showPlaylistPickerDialog by remember { mutableStateOf(false) }
+
+    com.be.music.platform.BackHandlerCompat(enabled = showFullPlayer || isSelectionMode) {
+        when {
+            showFullPlayer -> showFullPlayer = false
+            isSelectionMode -> viewModel.clearSelection()
+        }
+    }
+
+    val playlist = remember(playlists, playlistId) { playlists.find { it.id == playlistId } }
+
+    var sortMode by remember(playlist?.id) { mutableStateOf(PlaylistSort.ADDED) }
+    var sortReverse by remember(playlist?.id) { mutableStateOf(false) }
+
+    LaunchedEffect(playlist?.id) {
+        val p = playlist
+        if (p != null) {
+            sortMode = p.sortMode.toPlaylistSort()
+            sortReverse = p.sortReverse
+        }
+    }
+
+    fun savePlaylistSort() {
+        val p = playlist ?: return
+        viewModel.updatePlaylist(p.copy(sortMode = sortMode.name, sortReverse = sortReverse))
+    }
+
+    fun setPlaylistSort(mode: PlaylistSort) {
+        sortMode = mode
+        savePlaylistSort()
+    }
+
+    val initialPlaylistSongs = remember(playlist, songs) { playlist?.songIds?.mapNotNull { id -> songs.find { it.id == id } } ?: emptyList() }
+
+    val sortedPlaylistSongs = remember(initialPlaylistSongs, sortMode, sortReverse, playlist) {
+        val sorted = when (sortMode) {
+            PlaylistSort.ALPHA -> initialPlaylistSongs.sortedBy { it.title.lowercase() }
+            PlaylistSort.DURATION -> initialPlaylistSongs.sortedBy { it.duration }
+            PlaylistSort.ADDED -> {
+                // Madde 3: indirme tarihi değil, çalma listesine eklenme zaman damgası baz alınır.
+                // Yeniden eklenenler/en son eklenenler üstte; damga yoksa (eski veri)
+                // songIds sırası yedek kullanılır.
+                val addedAt = playlist?.songAddedAt ?: emptyMap()
+                val orderById = playlist?.songIds?.withIndex()?.associate { (i, id) -> id to i } ?: emptyMap()
+                initialPlaylistSongs.sortedWith(
+                    compareBy { song -> addedAt[song.id] ?: Long.MIN_VALUE }
+                ).asReversed()
+            }
+        }
+        if (sortReverse) sorted.reversed() else sorted
+    }
+
+    val visiblePlaylistSongs = remember(sortedPlaylistSongs, playlistSearchQuery) {
+        if (playlistSearchQuery.isBlank()) sortedPlaylistSongs else sortedPlaylistSongs.filter { it.title.contains(playlistSearchQuery, ignoreCase = true) || it.artistName.contains(playlistSearchQuery, ignoreCase = true) }
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    if (isSelectionMode) {
+                        Text(stringResource(Res.string.select_song) + " (${selectedSongIds.size})")
+                    } else {
+                        Text(playlist?.name ?: stringResource(Res.string.playlist_label))
+                    }
+                },
+                navigationIcon = {
+                    if (isSelectionMode) {
+                        IconButton(onClick = { viewModel.clearSelection() }) {
+                            Icon(Icons.Default.Close, contentDescription = stringResource(Res.string.close))
+                        }
+                    } else {
+                        IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(Res.string.back)) }
+                    }
+                },
+                actions = {
+                    if (isSelectionMode) {
+                        IconButton(onClick = { showRemoveDialog = true }) {
+                            Icon(Icons.Default.Delete, contentDescription = stringResource(Res.string.remove_mode))
+                        }
+                        // Madde 2: seçim modunda "three line" ikonu + menü
+                        // (Yeni Çalma Listesi / Çalma Listesine Ekle)
+                        Box {
+                            IconButton(onClick = { if (selectedSongIds.isNotEmpty()) showPlaylistMenu = true }) {
+                                Icon(Icons.Default.QueueMusic, contentDescription = stringResource(Res.string.playlist_menu_label))
+                            }
+                            DropdownMenu(
+                                expanded = showPlaylistMenu,
+                                onDismissRequest = { showPlaylistMenu = false }
+                            ) {
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(Res.string.new_playlist_menu)) },
+                                    onClick = {
+                                        showPlaylistMenu = false
+                                        if (selectedSongIds.isNotEmpty()) showPlaylistCreateDialog = true
+                                    },
+                                    leadingIcon = { Icon(Icons.Default.PlaylistAdd, contentDescription = null) }
+                                )
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(Res.string.add_to_playlist_menu)) },
+                                    onClick = {
+                                        showPlaylistMenu = false
+                                        if (selectedSongIds.isNotEmpty()) showPlaylistPickerDialog = true
+                                    },
+                                    leadingIcon = { Icon(Icons.Default.PlaylistAddCheck, contentDescription = null) }
+                                )
+                            }
+                        }
+                    }
+                    IconButton(
+                        onClick = { showInvertConfirm = true },
+                        enabled = playlist != null
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.SwapHoriz,
+                            contentDescription = stringResource(Res.string.invert_playlist)
+                        )
+                    }
+                    IconButton(onClick = { navController.navigate(SongPickerRoute(playlistId)) }) { Icon(Icons.Default.Add, contentDescription = stringResource(Res.string.add_songs)) }
+                }
+            )
+        },
+        floatingActionButton = {},
+        bottomBar = {
+            if (currentSong != null) {
+                val position by viewModel.currentPosition.collectAsState()
+                val duration by viewModel.duration.collectAsState()
+                PersistentMiniPlayer(
+                    currentSong = currentSong!!,
+                    isPlaying = isPlaying,
+                    position = position,
+                    duration = duration,
+                    onPlayPause = { viewModel.playPause() },
+                    onNext = { viewModel.next() },
+                    onPrev = { viewModel.previous() },
+                    onClick = { showFullPlayer = true }
+                )
+            }
+        }
+    ) { padding ->
+        if (visiblePlaylistSongs.isEmpty()) {
+            Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+                Text(stringResource(Res.string.empty_playlist), style = MaterialTheme.typography.bodyLarge)
+            }
+        } else {
+            val listState = rememberLazyListState()
+            Column(modifier = Modifier.fillMaxSize().padding(padding)) {
+                Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    OutlinedTextField(
+                        value = playlistSearchQuery,
+                        onValueChange = { playlistSearchQuery = it },
+                        placeholder = { Text(stringResource(Res.string.search) + "...") },
+                        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                        trailingIcon = { if (playlistSearchQuery.isNotEmpty()) IconButton(onClick = { playlistSearchQuery = "" }) { Icon(Icons.Default.Clear, contentDescription = null) } },
+                        modifier = Modifier.weight(1f),
+                        singleLine = true,
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Box {
+                        IconButton(onClick = { showPlayMenu = true }) { Icon(Icons.Default.PlayArrow, contentDescription = stringResource(Res.string.play_all)) }
+                        DropdownMenu(expanded = showPlayMenu, onDismissRequest = { showPlayMenu = false }) {
+                            DropdownMenuItem(text = { Text(stringResource(Res.string.random_play)) }, onClick = {
+                                showPlayMenu = false
+                                val shuffled = visiblePlaylistSongs.shuffled()
+                                if (shuffled.isNotEmpty()) viewModel.playSong(shuffled.first(), shuffled)
+                            }, leadingIcon = { Icon(Icons.Default.Shuffle, contentDescription = null) })
+                            DropdownMenuItem(text = { Text(stringResource(Res.string.sequential_play)) }, onClick = {
+                                showPlayMenu = false
+                                if (visiblePlaylistSongs.isNotEmpty()) viewModel.playSong(visiblePlaylistSongs.first(), visiblePlaylistSongs)
+                            }, leadingIcon = { Icon(Icons.Default.Replay, contentDescription = null) })
+                        }
+                    }
+                    IconButton(onClick = { showSortMenu = true }) { Icon(Icons.AutoMirrored.Filled.Sort, contentDescription = stringResource(Res.string.sort)) }
+                    DropdownMenu(expanded = showSortMenu, onDismissRequest = { showSortMenu = false }) {
+                        DropdownMenuItem(text = { Text(stringResource(Res.string.alphabetical)) }, onClick = { showSortMenu = false; setPlaylistSort(PlaylistSort.ALPHA) })
+                        DropdownMenuItem(text = { Text(stringResource(Res.string.song_duration)) }, onClick = { showSortMenu = false; setPlaylistSort(PlaylistSort.DURATION) })
+                        DropdownMenuItem(text = { Text(stringResource(Res.string.date_added)) }, onClick = { showSortMenu = false; setPlaylistSort(PlaylistSort.ADDED) })
+                        HorizontalDivider()
+                        DropdownMenuItem(text = { Text(if (!sortReverse) stringResource(Res.string.ascending) else stringResource(Res.string.descending)) }, onClick = { sortReverse = !sortReverse; savePlaylistSort(); showSortMenu = false })
+                    }
+
+                }
+
+                Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+                    LazyColumn(
+                        state = listState,
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(visiblePlaylistSongs) { song ->
+                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                                Box(modifier = Modifier.weight(1f)) {
+                                    val playList = if (playlistSearchQuery.isBlank()) sortedPlaylistSongs else visiblePlaylistSongs
+                                    SongListItem(
+                                        song = song,
+                                        isSelected = selectedSongIds.contains(song.id),
+                                        isSelectionMode = isSelectionMode,
+                                        isPlayingSong = currentSong?.id == song.id,
+                                        onClick = { viewModel.playSong(song, playList) },
+                                        onSelect = { viewModel.toggleSongSelection(song.id) },
+                                        onAddToPlaylist = { },
+                                        onDeleteSong = { showDeleteDialog = song },
+                                        onPlaySong = { viewModel.playSong(song, playList) },
+                                        onRemoveFromPlaylist = { showRemoveFromPlaylistDialog = song }
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    FastScroller(listState = listState, modifier = Modifier.align(Alignment.CenterEnd).padding(end = 2.dp))
+                }
+            }
+        }
+    }
+
+    if (showFullPlayer && currentSong != null) {
+        FullPlayerScreen(
+            viewModel = viewModel,
+            song = currentSong!!,
+            isPlaying = isPlaying,
+            navController = navController,
+            onCollapse = { showFullPlayer = false }
+        )
+    }
+
+    if (showDeleteDialog != null) {
+        val targetSong = showDeleteDialog!!
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = null },
+            title = { Text(stringResource(Res.string.delete_song)) },
+            text = { Text(stringResource(Res.string.delete_song_confirm, targetSong.title)) },
+            confirmButton = {
+                Button(onClick = { viewModel.deleteSong(targetSong); showDeleteDialog = null }, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)) {
+                    Text(stringResource(Res.string.delete))
+                }
+            },
+            dismissButton = { TextButton(onClick = { showDeleteDialog = null }) { Text(stringResource(Res.string.cancel)) } }
+        )
+    }
+
+    if (showInvertConfirm && playlist != null) {
+        val currentSize = playlist!!.songIds.size
+        val totalSongs = remember(songs) { songs.size }
+        val newSize = (totalSongs - currentSize).coerceAtLeast(0)
+        AlertDialog(
+            onDismissRequest = { showInvertConfirm = false },
+            icon = { Icon(Icons.Default.SwapHoriz, contentDescription = null) },
+            title = { Text(stringResource(Res.string.invert_playlist)) },
+            text = {
+                Text(stringResource(Res.string.invert_playlist_confirm, currentSize, newSize))
+            },
+            confirmButton = {
+                Button(onClick = {
+                    viewModel.invertPlaylistSongs(playlist!!)
+                    showInvertConfirm = false
+                }) {
+                    Text(stringResource(Res.string.invert))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showInvertConfirm = false }) {
+                    Text(stringResource(Res.string.cancel))
+                }
+            }
+        )
+    }
+
+    if (showRemoveDialog) {
+        AlertDialog(
+            onDismissRequest = { showRemoveDialog = false },
+            title = { Text(stringResource(Res.string.remove)) },
+            text = { Text(stringResource(Res.string.remove_selected, selectedSongIds.size)) },
+            confirmButton = {
+                Button(onClick = { viewModel.deleteSelectedSongs(); showRemoveDialog = false }) {
+                    Text(stringResource(Res.string.yes))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showRemoveDialog = false }) {
+                    Text(stringResource(Res.string.no))
+                }
+            }
+        )
+    }
+
+    if (showPlaylistCreateDialog) {
+        var playlistName by remember { mutableStateOf("") }
+        val initialSelected = remember { selectedSongIds.toList() }
+        AlertDialog(
+            onDismissRequest = { showPlaylistCreateDialog = false },
+            title = { Text(stringResource(Res.string.create_new_playlist)) },
+            text = {
+                OutlinedTextField(
+                    value = playlistName,
+                    onValueChange = { playlistName = it },
+                    label = { Text(stringResource(Res.string.playlist_name)) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            },
+            confirmButton = {
+                Button(onClick = {
+                    if (playlistName.isNotBlank()) {
+                        viewModel.createPlaylist(playlistName, initialSelected) {
+                            showPlaylistCreateDialog = false
+                            viewModel.clearSelection()
+                            navController.navigate(SongPickerRoute(it))
+                        }
+                    }
+                }) { Text(stringResource(Res.string.create)) }
+            },
+            dismissButton = { TextButton(onClick = { showPlaylistCreateDialog = false }) { Text(stringResource(Res.string.cancel)) } }
+        )
+    }
+
+    // Madde 2: Seçili şarkıları mevcut bir çalma listesine ekleme diyaloğu
+    if (showPlaylistPickerDialog) {
+        AlertDialog(
+            onDismissRequest = { showPlaylistPickerDialog = false },
+            title = { Text(stringResource(Res.string.add_to_playlist_menu)) },
+            text = {
+                LazyColumn {
+                    // Mevcut çalma listesi kendisine eklenemez; diğerlerini listele
+                    val otherPlaylists = playlists.filter { it.id != playlistId }
+                    if (otherPlaylists.isEmpty()) item { Text(stringResource(Res.string.no_playlists), modifier = Modifier.padding(16.dp)) }
+                    else items(otherPlaylists) { target ->
+                        TextButton(
+                            onClick = {
+                                viewModel.addSelectedSongsToPlaylist(target)
+                                showPlaylistPickerDialog = false
+                                viewModel.clearSelection()
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) { Text(target.name, style = MaterialTheme.typography.titleMedium) }
+                    }
+                }
+            },
+            confirmButton = {},
+            dismissButton = { TextButton(onClick = { showPlaylistPickerDialog = false }) { Text(stringResource(Res.string.close)) } }
+        )
+    }
+
+    if (showRemoveFromPlaylistDialog != null) {
+        val targetSong = showRemoveFromPlaylistDialog!!
+        AlertDialog(
+            onDismissRequest = { showRemoveFromPlaylistDialog = null },
+            title = { Text(stringResource(Res.string.remove_from_playlist)) },
+            text = { Text(stringResource(Res.string.remove_from_playlist_confirm, targetSong.title)) },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.removeSongFromPlaylist(playlistId, targetSong.id)
+                        showRemoveFromPlaylistDialog = null
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) { Text(stringResource(Res.string.remove)) }
+            },
+            dismissButton = { TextButton(onClick = { showRemoveFromPlaylistDialog = null }) { Text(stringResource(Res.string.cancel)) } }
+        )
+    }
+}

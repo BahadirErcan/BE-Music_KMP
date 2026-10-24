@@ -1,0 +1,26 @@
+# Gradle
+.gradle/
+build/
+.kotlin/
+
+# IDE / yerel ayarlar
+.idea/
+*.iml
+local.properties
+.DS_Store
+
+# iOS build çıktıları
+iosApp/build/
+xcuserdata/
+DerivedData/
+
+# builder CLI çıktıları ve imzalama dosyaları
+dist/
+ios-signing-*
+*.p12
+*.mobileprovision
+
+# Android Studio
+captures/
+.externalNativeBuild/
+.cxx/
