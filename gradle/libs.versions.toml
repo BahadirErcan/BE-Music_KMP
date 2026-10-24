@@ -45,7 +45,9 @@ ktor = "3.2.3"
 ktorClientOkhttp = "3.2.3"
 ktorClientDarwin = "3.2.3"
 kotlinxDatetime = "0.7.1"
-sqliteBundled = "2.7.1"
+# ABI 2.3.0 (Kotlin 2.3.20-built) klib'leri Kotlin 2.2.20 okuyamıyor; Room 2.8.4'ün
+    # kendi bağımlılığı da 2.6.2 zaten (ABI 2.2.0 uyumlu).
+    sqliteBundled = "2.6.2"
 materialIconsExtended = "1.7.3"
 okio = "3.16.0"
 browser = "1.9.0"
