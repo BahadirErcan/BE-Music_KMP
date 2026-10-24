@@ -67,7 +67,7 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		7555BFEE242A651A00829A71 = {
+		7555BFEA242A651A00829A71 = {
 			isa = PBXGroup;
 			children = (
 				7555BFEF242A651A00829A71 /* iosApp */,
@@ -119,7 +119,7 @@
 				Base,
 				tr,
 			);
-			mainGroup = 7555BFEE242A651A00829A71;
+			mainGroup = 7555BFEA242A651A00829A71;
 			productRefGroup = 7555BFF3242A651A00829A71 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
