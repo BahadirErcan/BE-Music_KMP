@@ -1,37 +1,72 @@
 # BE-Music iOS (iosApp)
 
-Bu klasör iOS hedefi için Xcode tarafı'nı tutar. Şu anda tek dosya var:
+Bu klasör iOS hedefinin Xcode projesini barındırır. Proje Linux/Windows'tan da
+build edilebilir — [MobAI-App/ios-builder](https://github.com/MobAI-App/ios-builder)
+kullanılarak (repo içinde `.github/workflows/ios-build.yml` hazır).
 
-- **`UnityAdsBridge.swift`** — Unity Ads köprüsü için PLACEHOLDER. Kendi Unity Ads
-  Swift kodun buraya yazılacak (initialize / loadInterstitial / loadRewarded /
-  showInterstitial / showRewarded). Kotlin tarafında birebir çifti
-  `composeApp/src/iosMain/kotlin/com/be/music/ads/AdsActual.kt` stub'ıdır;
-  Swift köprüsü hazır olduğundan that stub `UnityAdsBridge` çağrılarına
-  yönlendirilecek (objc interop via `@objcMembers`).
+## Dosyalar
 
-## Xcode projesi nasıl kurulur
+| Dosya | Amaç |
+|---|---|
+| `iosApp.xcodeproj/` | Xcode projesi (hedef: `iosApp`, bundle id: `com.be.music.ios`) |
+| `iosApp/iOSApp.swift` | SwiftUI `@main` giriş noktası |
+| `iosApp/ContentView.swift` | Kotlin `MainViewControllerKt.MainViewController()` çağıran UIViewControllerRepresentable |
+| `iosApp/Info.plist` | Uygulama bilgisi (`UIBackgroundModes: audio`, launch screen boş) |
+| `iosApp/Assets.xcassets/` | AppIcon + AccentColor |
+| `Config.xcconfig` | `APP_NAME` ve `BUNDLE_ID` |
+| `UnityAdsBridge.swift` | Unity Ads köprüsü **PLACEHOLDER** — kendi Unity Ads Swift kodun buraya yazılacak |
 
-1. Xcode'da yeni bir iOS App projesi aç; proje klasörünü `iosApp/` olarak kaydet.
-2. Build Phases -> Run Script Phase ekle (İçeriği Gradle'a bağlar):
+## Kotlin tarafı
+
+- Giriş noktası: `composeApp/src/iosMain/kotlin/com/be/music/MainViewController.kt`
+  (`fun MainViewController(): UIViewController` — Koin başlatır, UI monteler)
+- Framework adı: `ComposeApp` (`composeApp/build.gradle.kts`: `baseName = "ComposeApp"`)
+- Kotlin'in derlediği framework, "Kotlin Gradle framework sync" adındaki
+  Run Script Phase ile `composeApp/build/xcode-frameworks/ComposeApp.framework`
+  içine kopyalanır ve app'e gömülür (Embed Frameworks phase).
 
 ```sh
-cd <ROOT>/composeApp
-chmod +x ../gradlew
+cd composeApp
 ../gradlew :composeApp:embedAndSignAppleFrameworkForXcode
 ```
 
-   a) Framework'ü "General > Frameworks, Libraries..." bölümüne ekleyin:
-      `composeApp.xcframework` (yukarıdaki gradle task zaten arar).
-3. "Build Settings > Search Paths > Framework Search Paths":
-   `$(SRCROOT)/../composeApp/build/xcode-frameworks`
-4. `UnityAdsBridge.swift` izle: App target'a ekle. Unity Ads SDK bağlıyken
-   (Swift Package Manager veya CocoaPods) import bölümünü aktifleştir.
-5. Info.plist: dosya paylaşımı / arka plan indirme gerekmez (iOS indirmeleri
-   ileride 7/24 sunucu üzerinden yapılacak; o yüzden yt-dlp lokale gerek yok).
+## Linux/Windows'tan build (ios-builder)
 
-## Kotlin eştetığı
+```bash
+builder auth github        # bir kere, tarayıcıyla
+builder init               # (workflow'lar zaten commitli)
+builder ios build          # IPA'yı ./dist/ altına indirir
+```
 
-- İndirme (iOS): `composeApp/src/iosMain/kotlin/com/be/music/youtube/DownloadLauncherActual.kt`
-  — "Sunucu bağlantısı bekleniyor" durumunu gösterir; sunucu hazırl olduğunda
-  raw REST çağrıları buraya bağlanır.
-- Ayarlar: sunucu URL alanı (Settings > Server URL) — AppPreferences `serverUrl` yazılıyor.
+GitHub CLI ile workflow'u elle tetiklemek de mümkün:
+
+```bash
+gh workflow run ios-build.yml -f build_id=$(date +%s) -f ios_path=iosApp
+gh run watch $(gh run list --workflow=ios-build.yml --limit 1 --json databaseId -q '.[0].databaseId')
+gh run download <run-id>          # ipa artifact
+```
+
+Simülatörde denemek: `builder ios share` (MobAI API key gerektirir).
+
+Cihazda çalıştırmak: `builder signing setup --devices-from-mobai` sonra
+`builder ios build --profile development --distribute` (QR kod ile kurulum) —
+veya unsigned IPA'yı MobAI ile ücretsiz Apple ID ile yeniden imzala.
+
+## Unity Ads
+
+`UnityAdsBridge.swift` placeholder'dır. Unity Ads SDK eklendiğinde (SPM
+`https://github.com/unity-ads/unity-ads-sdk-ios` ya da CocoaPods) `import UnityAds`
+satırı aktifleştirilir ve Initialize/load/show metotları real implementasyonla
+doldurulur. Kotlin tarafındaki stub:
+`composeApp/src/iosMain/kotlin/com/be/music/ads/AdsActual.kt` — SDK hazır
+olunca objc interop ile `UnityAdsBridge` çağrılarına bağlanacak.
+
+Placement id'ler: `BE-Music-Interstitial`, `BE-Music-Rewarded` (game id 6153407).
+
+## İndirme (yt-dlp) — iOS güvenlik modeli
+
+iOS sandbox'ında yerel yt-dlp çalıştırma mümkün değildir (App Store kuralları).
+Plan: 7/24 çalışan uzak sunucu. O zamana kadar iOS'ta indirme ekranı
+"sunucu bağlantısı bekleniyor" durumunda; Ayarlar > *BE-Music Sunucu Adresi*
+alanına (iOS'ta görünür) sunucu API adresi girilir ve sunucu hazır olduğunda
+`iosMain/youtube/DownloadLauncherActual.kt` REST akışına bağlanacak.
