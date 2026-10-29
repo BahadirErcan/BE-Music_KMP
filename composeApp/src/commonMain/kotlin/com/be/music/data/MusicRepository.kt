@@ -6,6 +6,7 @@ import com.be.music.platform.FS
 import com.be.music.platform.MusicScanner
 import com.be.music.platform.SongIO
 import com.be.music.platform.FilePicker
+import com.be.music.platform.IoDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -55,7 +56,7 @@ class MusicRepository(
         return songDao.getSongsByIds(ids)
     }
 
-    suspend fun scanLocalMusic(forceRefresh: Boolean = false) = withContext(Dispatchers.IO) {
+    suspend fun scanLocalMusic(forceRefresh: Boolean = false) = withContext(IoDispatcher) {
         val existingSongs = songDao.getAllSongsOnce()
         if (!forceRefresh && existingSongs.isNotEmpty()) {
             return@withContext
@@ -118,7 +119,7 @@ class MusicRepository(
         return null
     }
 
-    suspend fun updateSongLyricsPath(song: Song, lyricsPath: String?) = withContext(Dispatchers.IO) {
+    suspend fun updateSongLyricsPath(song: Song, lyricsPath: String?) = withContext(IoDispatcher) {
         songDao.updateSong(song.copy(lyricsPath = lyricsPath))
     }
 
@@ -160,7 +161,7 @@ class MusicRepository(
         }
     }
 
-    private suspend fun exportPlaylistToJson(playlist: Playlist): String? = withContext(Dispatchers.IO) {
+    private suspend fun exportPlaylistToJson(playlist: Playlist): String? = withContext(IoDispatcher) {
         try {
             val plDir = FS.playlistExportDir
             FS.makeDirs(plDir)
@@ -182,7 +183,7 @@ class MusicRepository(
 
     suspend fun exportPlaylistFilePath(playlist: Playlist): String? = exportPlaylistToJson(playlist)
 
-    suspend fun importPlaylistsFromJson() = withContext(Dispatchers.IO) {
+    suspend fun importPlaylistsFromJson() = withContext(IoDispatcher) {
         try {
             val dirs = mutableListOf<String>()
             dirs.add(FS.playlistExportDir)
@@ -224,7 +225,7 @@ class MusicRepository(
         }
     }
 
-    suspend fun importPlaylistFromFile(file: String): Pair<Boolean, String> = withContext(Dispatchers.IO) {
+    suspend fun importPlaylistFromFile(file: String): Pair<Boolean, String> = withContext(IoDispatcher) {
         try {
             val jsonString = FS.readText(file)
                 ?: return@withContext Pair(false, "Playlist import failed: file not readable")
@@ -267,7 +268,7 @@ class MusicRepository(
         MusicScanner.legacyPlaylistDirs()
     } catch (e: Exception) { emptyList() }
 
-    suspend fun updateSongMetadata(song: Song, newTitle: String, newArtist: String, newAlbum: String) = withContext(Dispatchers.IO) {
+    suspend fun updateSongMetadata(song: Song, newTitle: String, newArtist: String, newAlbum: String) = withContext(IoDispatcher) {
         val oldFile = song.path
         if (!FS.exists(oldFile)) {
             updateSongMetadataDbOnly(song, newTitle, newArtist, newAlbum)
@@ -362,7 +363,7 @@ class MusicRepository(
         }
     }
 
-    suspend fun deleteSong(song: Song) = withContext(Dispatchers.IO) {
+    suspend fun deleteSong(song: Song) = withContext(IoDispatcher) {
         try {
             // 1. Fiziksel dosyayı sil
             if (FS.exists(song.path)) FS.delete(song.path)

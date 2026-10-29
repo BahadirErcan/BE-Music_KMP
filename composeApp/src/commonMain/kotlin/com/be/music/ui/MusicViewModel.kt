@@ -44,6 +44,7 @@ import com.be.music.youtube.SearchToken
 import com.be.music.youtube.VttParser
 import com.be.music.youtube.YoutubeSearchEngine
 import com.be.music.youtube.YtDlp
+import com.be.music.platform.IoDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -614,7 +615,7 @@ class MusicViewModel(
             try {
                 val artist = if (song.artistName.contains("unknown", ignoreCase = true)) "" else "${song.artistName} "
                 val query = "$artist${song.title}".trim()
-                val results = withContext(Dispatchers.IO) {
+                val results = withContext(IoDispatcher) {
                     YoutubeSearchEngine.searchPage(query, null).first
                 }
                 val top10 = results.take(10)
@@ -641,7 +642,7 @@ class MusicViewModel(
             _subtitlesError.value = null
             _availableSubtitles.value = emptyList()
             try {
-                val options = withContext(Dispatchers.IO) {
+                val options = withContext(IoDispatcher) {
                     val videoUrl = "https://www.youtube.com/watch?v=$videoId"
                     val jsonStr = YtDlp.dumpJson(videoUrl)
                         ?: throw Exception(getStringResource(Res.string.video_info_error))
@@ -704,7 +705,7 @@ class MusicViewModel(
             _lyricsSearchLoading.value = true
             _subtitlesError.value = null
             try {
-                val success = withContext(Dispatchers.IO) {
+                val success = withContext(IoDispatcher) {
                     val videoUrl = "https://www.youtube.com/watch?v=$videoId"
                     val parentDir = FS.parentDir(targetSong.path) ?: FS.musicExportDir
                     val songBaseName = targetSong.path.substringAfterLast('/').substringBeforeLast('.')
@@ -790,7 +791,7 @@ class MusicViewModel(
             _currentLyrics.value = emptyList()
             return
         }
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(IoDispatcher) {
             try {
                 val path = song.lyricsPath ?: run {
                     val basePath = song.path.substringBeforeLast('.')

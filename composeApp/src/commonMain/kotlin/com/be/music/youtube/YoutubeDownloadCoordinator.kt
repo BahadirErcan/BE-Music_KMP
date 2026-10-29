@@ -10,6 +10,7 @@ import com.be.music.data.Song
 import com.be.music.premium.PremiumManager
 import com.be.music.platform.FS
 import com.be.music.platform.SongIO
+import com.be.music.platform.IoDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -153,7 +154,7 @@ object YoutubeDownloadCoordinator {
     }
 
     /** Son indirme sonrası metadata düzeltmeleri (media taraması platform tarafında). */
-    suspend fun postProcessFiles(paths: List<String>, playlistBaseName: String?) = withContext(Dispatchers.IO) {
+    suspend fun postProcessFiles(paths: List<String>, playlistBaseName: String?) = withContext(IoDispatcher) {
         for (path in paths) {
             val ext = FS.extension(path).lowercase()
             if (ext in listOf("mp3", "m4a", "aac", "mp4", "flac", "ogg", "opus")) {
@@ -172,7 +173,7 @@ object YoutubeDownloadCoordinator {
         baseName: String,
         numberPosition: String,
         multiSong: Boolean
-    ): Pair<String, Int>? = withContext(Dispatchers.IO) {
+    ): Pair<String, Int>? = withContext(IoDispatcher) {
         try {
             val registered = SongIO.registerDownloaded(paths)
             if (registered.isEmpty()) return@withContext null
@@ -289,7 +290,7 @@ object YoutubeDownloadCoordinator {
         if (isPremium && downloadLyrics) {
             // premium: indirme ile paralel altyazı
             var bestLang: String? = null
-            val subtitleJob = launch(Dispatchers.IO) {
+            val subtitleJob = launch(IoDispatcher) {
                 val (lang, auto) = determineBestSubtitleLang(videoUrl)
                 if (lang != null) {
                     bestLang = lang
@@ -368,7 +369,7 @@ object YoutubeDownloadCoordinator {
             }
             if (ok) {
                 val files = newFiles(downloadDir, initialNames)
-                synchronized(downloadedPaths) { downloadedPaths.addAll(files) }
+                counterLock.lock(); downloadedPaths.addAll(files); counterLock.unlock()
                 postProcessFiles(files, playlistBaseName)
                 counterLock.lock(); downloadedCount++; counterLock.unlock()
                 DownloadCounter.incrementDownloadCount()
@@ -459,7 +460,7 @@ object YoutubeDownloadCoordinator {
                 }
                 if (ok) {
                     val files = newFiles(downloadDir, initialNames)
-                    synchronized(downloadedPaths) { downloadedPaths.addAll(files) }
+                    downloadedPaths.addAll(files)
                     postProcessFiles(files, playlistBaseName)
                     downloadedCount++
                     DownloadCounter.incrementDownloadCount()

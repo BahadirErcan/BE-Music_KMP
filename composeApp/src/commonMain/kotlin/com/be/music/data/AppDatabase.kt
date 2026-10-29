@@ -30,8 +30,12 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun songOverrideDao(): SongOverrideDao
 
     companion object {
-        @Volatile
-        private var INSTANCE: AppDatabase? = null
+        private val INSTANCE: AppDatabase by lazy {
+            createDatabaseBuilder()
+                .addMigrations(*MIGRATIONS)
+                .fallbackToDestructiveMigration(dropAllTables = true)
+                .build()
+        }
 
         val MIGRATION_7_8 = object : Migration(7, 8) {
             override fun migrate(db: SQLiteConnection) {
@@ -62,15 +66,6 @@ abstract class AppDatabase : RoomDatabase() {
 
         private val MIGRATIONS = arrayOf(MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10)
 
-        fun getDatabase(): AppDatabase {
-            return INSTANCE ?: synchronized(this) {
-                val instance = createDatabaseBuilder()
-                    .addMigrations(*MIGRATIONS)
-                    .fallbackToDestructiveMigration(dropAllTables = true)
-                    .build()
-                INSTANCE = instance
-                instance
-            }
-        }
+        fun getDatabase(): AppDatabase = INSTANCE
     }
 }

@@ -18,15 +18,17 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import com.be.music.data.Song
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import com.be.music.platform.EmbeddedArtLoader
 
 object AlbumArtHelper {
     private val albumArtCache = LinkedHashMap<String, ImageBitmap>() // basit LRU (max 100)
 
-    @Synchronized
+    // Sadece Main thread'den okunur/yazılır (loadArt put'u Main'e taşır),
+    // böylece JVM'e özgü @Synchronized kullanılmaz.
     fun getCachedArt(path: String): ImageBitmap? = albumArtCache[path]
 
-    @Synchronized
     fun putCachedArt(path: String, bitmap: ImageBitmap) {
         if (albumArtCache.size >= 100) {
             val first = albumArtCache.keys.firstOrNull()
@@ -36,9 +38,12 @@ object AlbumArtHelper {
     }
 
     suspend fun loadArt(path: String): ImageBitmap? {
-        getCachedArt(path)?.let { return it }
+        val cached = getCachedArt(path)
+        if (cached != null) return cached
         val art = EmbeddedArtLoader.loadArt(path)
-        if (art != null) putCachedArt(path, art)
+        if (art != null) {
+            withContext(Dispatchers.Main.immediate) { putCachedArt(path, art) }
+        }
         return art
     }
 }

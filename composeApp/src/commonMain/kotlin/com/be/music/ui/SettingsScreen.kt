@@ -438,7 +438,7 @@ fun SettingsScreen(
 
                                             Spacer(modifier = Modifier.height(4.dp))
                                             Text(
-                                                String.format("#%06X", (red.intValue shl 16) or (green.intValue shl 8) or blue.intValue),
+                                                buildHexColor((red.intValue shl 16) or (green.intValue shl 8) or blue.intValue),
                                                 style = MaterialTheme.typography.bodySmall,
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                                             )
@@ -1476,3 +1476,8 @@ fun SettingsScreen(
     }
 }
 
+/** RGB -> "#RRGGBB" (common; String.format yok). */
+internal fun buildHexColor(rgb: Int): String {
+    val hex = rgb.coerceIn(0, 0xFFFFFF).toString(16).uppercase().padStart(6, '0')
+    return "#$hex"
+}

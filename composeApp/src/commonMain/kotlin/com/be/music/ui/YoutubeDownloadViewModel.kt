@@ -19,6 +19,7 @@ import com.be.music.youtube.DownloadLauncher
 import com.be.music.youtube.SpotifyTracks
 import com.be.music.youtube.YoutubeSearchEngine
 import com.be.music.youtube.YoutubeVideo
+import com.be.music.platform.IoDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -173,7 +174,7 @@ class YoutubeDownloadViewModel(
         _isFetchingNextPage.value = true
         viewModelScope.launch {
             try {
-                val (items, nextPage) = withContext(Dispatchers.IO) {
+                val (items, nextPage) = withContext(IoDispatcher) {
                     YoutubeSearchEngine.searchPage(query, page)
                 }
                 currentPageToken = nextPage
@@ -199,7 +200,7 @@ class YoutubeDownloadViewModel(
             lastSearchQuery = query
             currentPageToken = null
             try {
-                val (items, nextPage) = withContext(Dispatchers.IO) {
+                val (items, nextPage) = withContext(IoDispatcher) {
                     YoutubeSearchEngine.searchPage(query, null)
                 }
                 _searchResults.value = items
@@ -233,7 +234,7 @@ class YoutubeDownloadViewModel(
 
     fun isSpotifyPlaylistUrl(url: String): Boolean = isSpotifyUrl(url)
 
-    suspend fun resolveBatchInputLines(rawLines: List<String>): List<String> = withContext(Dispatchers.IO) {
+    suspend fun resolveBatchInputLines(rawLines: List<String>): List<String> = withContext(IoDispatcher) {
         val resolvedLines = mutableListOf<String>()
         rawLines.forEach { rawLine ->
             val trimmed = rawLine.trim()

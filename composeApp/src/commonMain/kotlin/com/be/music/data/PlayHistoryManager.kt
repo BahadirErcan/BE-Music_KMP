@@ -3,6 +3,7 @@
 package com.be.music.data
 
 import com.be.music.platform.FS
+import com.be.music.platform.IoDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -73,7 +74,7 @@ class PlayHistoryManager {
         } catch (_: Exception) {}
     }
 
-    suspend fun addEntry(song: Song) = withContext(Dispatchers.IO) {
+    suspend fun addEntry(song: Song) = withContext(IoDispatcher) {
         val now = Clock.System.now().toEpochMilliseconds()
         val cooldownMs = 30_000L
 
@@ -108,7 +109,7 @@ class PlayHistoryManager {
         save()
     }
 
-    suspend fun clearHistory() = withContext(Dispatchers.IO) {
+    suspend fun clearHistory() = withContext(IoDispatcher) {
         _history.update { emptyList() }
         save()
     }

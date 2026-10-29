@@ -8,6 +8,7 @@ import platform.Foundation.NSDocumentDirectory
 import platform.Foundation.NSFileManager
 import platform.Foundation.NSURL
 import platform.Foundation.NSUserDomainMask
+import platform.Foundation.URLForDirectory
 
 private fun databaseDir(): String {
     val url: NSURL? = NSFileManager.defaultManager.URLForDirectory(
@@ -17,7 +18,7 @@ private fun databaseDir(): String {
         create = true,
         error = null,
     )
-    return requireNotNull(url).path + "/databases"
+    return (url?.path ?: "") + "/databases"
 }
 
 actual fun createDatabaseBuilder(): RoomDatabase.Builder<AppDatabase> {

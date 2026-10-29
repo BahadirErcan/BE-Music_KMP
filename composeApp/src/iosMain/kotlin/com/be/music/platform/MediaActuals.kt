@@ -1,18 +1,25 @@
+@file:OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
+
 package com.be.music.platform
 
 import com.be.music.data.MusicRepository
-import com.be.music.data.ScannedSong
 import kotlinx.cinterop.alloc
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
+import kotlinx.cinterop.value
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import platform.Foundation.NSDocumentDirectory
+import platform.Foundation.NSFileManager
+import platform.Foundation.NSURL
+import platform.Foundation.NSUserDomainMask
+import platform.Foundation.URLForDirectory
 
 /** Şimdilik Documents dizinini gezer; metadata'sız (dosya adı = başlık). */
 actual object MusicScanner {
     val AUDIO_EXTENSIONS = setOf("mp3", "m4a", "aac", "flac", "ogg", "opus", "wav")
 
-    actual suspend fun scanSongs(): List<ScannedSong> = withContext(Dispatchers.IO) {
+    actual suspend fun scanSongs(): List<ScannedSong> = withContext(Dispatchers.Default) {
         val out = mutableListOf<ScannedSong>()
         walk(docsDir(), out)
         out
@@ -35,10 +42,10 @@ actual object MusicScanner {
     }
 
     private fun isDirectoryPath(path: String): Boolean {
-        return kotlinx.cinterop.memScoped {
-            val isDir = kotlinx.cinterop.alloc<kotlinx.cinterop.BooleanVar>()
+        return memScoped {
+            val isDir = alloc<BooleanVar>()
             NSFileManager.defaultManager.fileExistsAtPath(path, isDirectory = isDir.ptr)
-            isDir.value
+            isDir.ptr.value
         }
     }
 
@@ -67,7 +74,7 @@ actual object MusicScanner {
             create = false,
             error = null,
         )
-        return requireNotNull(url).path
+        return url?.path ?: ""
     }
 
     private fun joinPaths(dir: String, child: String): String =

@@ -9,6 +9,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import com.be.music.platform.FS
 import com.be.music.platform.datastorePath
 import kotlinx.coroutines.CoroutineScope
+import com.be.music.platform.IoDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.first
@@ -21,24 +22,15 @@ import kotlinx.coroutines.flow.map
  * - custom icon enable (MainActivityCustomIcon)
  */
 object AppPreferences {
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val scope = CoroutineScope(SupervisorJob())
 
-    @Volatile
-    private var store: androidx.datastore.core.DataStore<Preferences>? = null
-
-    fun get(): androidx.datastore.core.DataStore<Preferences> {
-        val current = store
-        if (current != null) return current
-        synchronized(this) {
-            val c = store
-            if (c != null) return c
-            val created = PreferenceDataStoreFactory.createWithPath(
-                produceFile = { datastorePath("be_music_prefs.preferences_pb") }
-            )
-            store = created
-            return created
-        }
+    private val store: androidx.datastore.core.DataStore<Preferences> by lazy {
+        PreferenceDataStoreFactory.createWithPath(
+            produceFile = { datastorePath("be_music_prefs.preferences_pb") }
+        )
     }
+
+    fun get(): androidx.datastore.core.DataStore<Preferences> = store
 
     private object Keys {
         val APP_LANGUAGE = stringPreferencesKey("app_language")

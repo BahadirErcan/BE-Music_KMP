@@ -1,13 +1,14 @@
 package com.be.music.youtube
-import org.jetbrains.compose.resources.getString
 
+import com.be.music.res.Res
+import org.jetbrains.compose.resources.getString
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 /**
  * iOS DownloadLauncher — SUNUCU STUB:
- * Yerel yt-dlp alternatifine geçilmeden için bu akışlar şimdilik "sunucu bağlantısı bekleniyor"
+ * Yerel yt-dlp alternatifi hazır olana kadar bu akışlar "sunucu bağlantısı bekleniyor"
  * hatasını DownloadBus'a yayınlar. Kullanıcının 7/24 sunucu planı devreye girdiğinde
  * DownloadEngine buraya bağlanacak.
  */
@@ -34,7 +35,7 @@ actual object DownloadLauncher {
                     downloaded = 0,
                     total = 0,
                     failed = 0,
-                    error = getString(com.be.music.res.Res.string.server_pending)
+                    error = getString(Res.string.server_pending)
                 )
             )
         }

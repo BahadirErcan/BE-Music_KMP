@@ -1,7 +1,5 @@
 package com.be.music.player
 
-import com.be.music.player.PlayerRepeat
-import com.be.music.platform.PlayerTrack
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -15,20 +13,10 @@ import kotlinx.coroutines.launch
 import platform.AVFoundation.AVPlayer
 import platform.AVFoundation.AVPlayerItem
 import platform.AVFoundation.avPlayerItemDidPlayToEndTimeNotification
-import platform.AVFoundation.play
-import platform.AVFoundation.pause
-import platform.AVFoundation.playerItemWithURL
-import platform.AVFoundation.replaceCurrentItemWithPlayerItem
-import platform.AVFoundation.seekToTime
-import platform.AVFoundation.currentTime
-import platform.AVFoundation.duration
 import platform.CoreMedia.CMTimeGetSeconds
 import platform.CoreMedia.CMTimeMakeWithSeconds
 import platform.Foundation.NSNotificationCenter
-import platform.Foundation.URLWithString
-import platform.Foundation.defaultCenter
-import platform.Foundation.removeObserver
-import platform.Foundation.fileURLWithPath
+import platform.Foundation.NSURL
 
 /**
  * iOS oynatıcı köprüsü — AVPlayer temelli.
@@ -61,6 +49,8 @@ class IosPlayerBridge : PlayerBridge, QueueAwarePlayerBridge {
     override val queueIds: StateFlow<List<Long>> = MutableStateFlow(emptyList())
     override val currentIndex: StateFlow<Int> = MutableStateFlow(0)
 
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
     val player = AVPlayer()
 
     private var queue: List<PlayerTrack> = emptyList()
@@ -85,7 +75,8 @@ class IosPlayerBridge : PlayerBridge, QueueAwarePlayerBridge {
     }
 
     private fun currentItemDurationMs(): Long {
-        val seconds = CMTimeGetSeconds(player.currentItem?.duration ?: return 0L)
+        val item = player.currentItem ?: return 0L
+        val seconds = CMTimeGetSeconds(item.duration)
         return if (!seconds.isNaN() && seconds.isFinite() && seconds > 0) (seconds * 1000).toLong() else 0L
     }
 
@@ -113,9 +104,9 @@ class IosPlayerBridge : PlayerBridge, QueueAwarePlayerBridge {
         val track = queue[index]
         val path = track.uri.removePrefix("file://")
         val url = if (path.startsWith("/")) {
-            platform.Foundation.NSURL.fileURLWithPath(path)
+            NSURL.fileURLWithPath(path)
         } else {
-            platform.Foundation.NSURL.URLWithString(track.uri)
+            NSURL.URLWithString(track.uri)
         } ?: return
         val item = AVPlayerItem.playerItemWithURL(url)
         player.replaceCurrentItemWithPlayerItem(item)
@@ -168,7 +159,6 @@ class IosPlayerBridge : PlayerBridge, QueueAwarePlayerBridge {
 
     override fun setRepeat(mode: PlayerRepeat) {
         _repeatMode.value = mode
-        refreshQueueInfo()
     }
 
     override fun setShuffle(enabled: Boolean) {
@@ -185,3 +175,5 @@ class IosPlayerBridge : PlayerBridge, QueueAwarePlayerBridge {
         player.pause()
     }
 }
+
+actual fun createPlayerBridge(): PlayerBridge = IosPlayerBridge()

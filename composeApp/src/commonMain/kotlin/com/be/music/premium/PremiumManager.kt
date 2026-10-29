@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import com.be.music.platform.Platform
 import com.be.music.platform.isDesktop
 import kotlinx.coroutines.CoroutineScope
+import com.be.music.platform.IoDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
@@ -24,7 +25,7 @@ class PremiumManager(
             private set
     }
 
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val scope = CoroutineScope(SupervisorJob())
 
     private val _state = MutableStateFlow(PremiumState())
     val state: StateFlow<PremiumState> = _state.asStateFlow()

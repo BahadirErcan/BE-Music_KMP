@@ -1,23 +1,26 @@
+@file:OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
+
 package com.be.music.platform
 
-import kotlinx.cinterop.BooleanVar
 import kotlinx.cinterop.alloc
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
+import kotlinx.cinterop.value
 import platform.Foundation.NSData
 import platform.Foundation.NSDate
 import platform.Foundation.NSDocumentDirectory
 import platform.Foundation.NSFileModificationDate
 import platform.Foundation.NSFileManager
 import platform.Foundation.NSFileSize
+import platform.Foundation.NSNumber
 import platform.Foundation.NSString
-import platform.Foundation.NSStringFromString
 import platform.Foundation.NSURL
 import platform.Foundation.NSUTF8StringEncoding
 import platform.Foundation.NSUserDomainMask
+import platform.Foundation.URLForDirectory
+import platform.Foundation.contentsOfDirectoryAtPath
 import platform.Foundation.create
 import platform.Foundation.dataWithContentsOfFile
-import platform.Foundation.fileExistsAtPath
 import platform.Foundation.timeIntervalSince1970
 
 private fun docsDir(): String {
@@ -44,19 +47,19 @@ actual object FS {
         return memScoped {
             val isDir = alloc<BooleanVar>()
             NSFileManager.defaultManager.fileExistsAtPath(path, isDirectory = isDir.ptr)
-            isDir.value
+            isDir.ptr.value
         }
     }
 
     actual fun readText(path: String): String? = try {
-        val data = NSData.dataWithContentsOfFile(path)
+        val data: NSData? = NSData.dataWithContentsOfFile(path)
         data?.let { d -> NSString.create(data = d, encoding = NSUTF8StringEncoding) as? String }
     } catch (e: Exception) {
         null
     }
 
     actual fun writeText(path: String, content: String): Boolean = try {
-        val ns = NSStringFromString(content)
+        val ns = content as NSString
         ns.writeToFile(path, atomically = true, encoding = NSUTF8StringEncoding, error = null)
     } catch (e: Exception) {
         false
@@ -91,7 +94,7 @@ actual object FS {
 
     actual fun lastModifiedMs(path: String): Long = try {
         val attrs = NSFileManager.defaultManager.attributesOfItemAtPath(path, null)
-        val date = attrs[NSFileModificationDate] as? NSDate
+        val date = attrs?.get(NSFileModificationDate) as? NSDate
         (date?.timeIntervalSince1970?.times(1000.0))?.toLong() ?: 0L
     } catch (e: Exception) {
         0L
@@ -101,7 +104,7 @@ actual object FS {
 
     actual fun fileSize(path: String): Long = try {
         val attrs = NSFileManager.defaultManager.attributesOfItemAtPath(path, null)
-        val size = attrs[NSFileSize] as? platform.Foundation.NSNumber
+        val size = attrs?.get(NSFileSize) as? NSNumber
         size?.unsignedLongLongValue?.toLong() ?: 0L
     } catch (e: Exception) {
         0L

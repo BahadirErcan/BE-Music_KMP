@@ -29,7 +29,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.be.music.player.AudioEffects
 import com.be.music.player.EffectsProvider
-import java.util.Locale
 import kotlinx.coroutines.delay
 import kotlin.math.roundToInt
 
@@ -328,18 +327,31 @@ private fun VerticalGainSlider(
 
 /** milliBel -> "+6 dB" gibi metin. */
 private fun formatDb(millibel: Int): String {
-    val db = millibel / 100f
+    val db = (millibel / 100.0)
     val sign = if (db >= 0) "+" else ""
-    return String.format(Locale.US, "%s%.0f dB", sign, db)
+    return sign + round0(db) + " dB"
 }
 
 /** mHz -> "60 Hz" / "230 Hz" / "1 kHz" / "14 kHz". */
 private fun formatFrequency(mhz: Int): String = when {
     mhz <= 0 -> ""
-    mhz >= 1_000_000 -> String.format(
-        Locale.US,
-        if (mhz % 1_000_000 == 0) "%.0f kHz" else "%.1f kHz",
-        mhz / 1_000_000f
-    )
-    else -> String.format(Locale.US, "%.0f Hz", mhz / 1_000f)
+    mhz >= 1_000_000 -> {
+        val v = mhz / 1_000_000.0
+        val text = if (mhz % 1_000_000 == 0) round0(v) else trim1(v)
+        "$text kHz"
+    }
+    else -> round0(mhz / 1_000.0) + " Hz"
+}
+
+private fun round0(value: Double): String = formatWhole(value)
+
+private fun trim1(value: Double): String {
+    val whole = value.toLong()
+    val frac = ((value - whole) * 10).toLong()
+    return if (frac == 0L) "$whole" else "$whole.${frac}"
+}
+
+private fun formatWhole(value: Double): String {
+    val v = kotlin.math.round(value).toLong()
+    return v.toString()
 }

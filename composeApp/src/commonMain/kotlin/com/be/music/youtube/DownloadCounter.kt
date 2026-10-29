@@ -17,22 +17,13 @@ object DownloadCounter {
     }
     const val REWARD_THRESHOLD = 10
 
-    @Volatile
-    private var store: androidx.datastore.core.DataStore<Preferences>? = null
-
-    private fun get(): androidx.datastore.core.DataStore<Preferences> {
-        val current = store
-        if (current != null) return current
-        synchronized(this) {
-            val c = store
-            if (c != null) return c
-            val created = PreferenceDataStoreFactory.createWithPath(
-                produceFile = { datastorePath("ad_download_prefs.preferences_pb") }
-            )
-            store = created
-            return created
-        }
+    private val store: androidx.datastore.core.DataStore<Preferences> by lazy {
+        PreferenceDataStoreFactory.createWithPath(
+            produceFile = { datastorePath("ad_download_prefs.preferences_pb") }
+        )
     }
+
+    fun get(): androidx.datastore.core.DataStore<Preferences> = store
 
     suspend fun downloadCount(): Int = get().data.first()[Keys.DOWNLOAD_COUNT] ?: 0
 

@@ -9,6 +9,7 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import com.be.music.platform.datastorePath
 import kotlinx.coroutines.CoroutineScope
+import com.be.music.platform.IoDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
@@ -22,28 +23,15 @@ import kotlinx.coroutines.launch
  * (premium_prefs.preferences_pb); ilk açılışta SharedPreferences'tan bir kez taşınır.
  */
 object PremiumStorage {
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val scope = CoroutineScope(SupervisorJob())
 
-    @Volatile
-    private var storePath = ""
-    @Volatile
-    private var dataStore: DataStore<Preferences>? = null
-
-    fun get(): DataStore<Preferences> {
-        val path = datastorePath("premium_prefs.preferences_pb")
-        val current = dataStore
-        if (current != null && storePath == path.toString()) return current
-        synchronized(this) {
-            val c = dataStore
-            if (c != null && storePath == path.toString()) return c
-            storePath = path.toString()
-            val created = PreferenceDataStoreFactory.createWithPath(
-                produceFile = { path }
-            )
-            dataStore = created
-            return created
-        }
+    private val dataStore: DataStore<Preferences> by lazy {
+        PreferenceDataStoreFactory.createWithPath(
+            produceFile = { datastorePath("premium_prefs.preferences_pb") }
+        )
     }
+
+    fun get(): DataStore<Preferences> = dataStore
 
     private object Keys {
         val IS_PREMIUM = booleanPreferencesKey("is_premium")
