@@ -56,8 +56,11 @@ class IosPlayerBridge : PlayerBridge, QueueAwarePlayerBridge {
     private val _trackEnded = MutableStateFlow(0)
     override val trackEnded: StateFlow<Int> = _trackEnded.asStateFlow()
 
-    override val queueIds: StateFlow<List<Long>> = MutableStateFlow(emptyList())
-    override val currentIndex: StateFlow<Int> = MutableStateFlow(0)
+    private val _queueIds = MutableStateFlow(emptyList<Long>())
+    override val queueIds: StateFlow<List<Long>> = _queueIds.asStateFlow()
+
+    private val _currentIndex = MutableStateFlow(0)
+    override val currentIndex: StateFlow<Int> = _currentIndex.asStateFlow()
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
@@ -127,8 +130,8 @@ class IosPlayerBridge : PlayerBridge, QueueAwarePlayerBridge {
         player.seekToTime(CMTimeMakeWithSeconds(positionMs / 1000.0, 600))
         player.play()
         _playing.value = true
-        queueIds.value = queue.map { it.id }
-        currentIndex.value = index
+        _queueIds.value = queue.map { it.id }
+        _currentIndex.value = index
     }
 
     override fun setQueue(tracks: List<PlayerTrack>, startIndex: Int, startPositionMs: Long) {
