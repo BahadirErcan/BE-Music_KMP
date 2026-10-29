@@ -11,30 +11,13 @@
 		21C5234D29D9109B00A9D3AC /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21C5234C29D9109B00A9D3AC /* ContentView.swift */; };
 		21C5234F29D9109B00A9D3AC /* UnityAdsBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21C5234E29D9109B00A9D3AC /* UnityAdsBridge.swift */; };
 		21C5235129D9109B00A9D3AC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 21C5235029D9109B00A9D3AC /* Assets.xcassets */; };
-		54ACC2AB29D955870066A3C0 /* ComposeApp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 54ACC2AA29D955870066A3C0 /* ComposeApp.framework */; };
-		54ACC2AC29D955870066A3C0 /* ComposeApp.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 54ACC2AA29D955870066A3C0 /* ComposeApp.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
-
-/* Begin PBXCopyFilesBuildPhase section */
-		21C5235529D9109B00A9D3AC /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				54ACC2AC29D955870066A3C0 /* ComposeApp.framework in Embed Frameworks */,
-			);
-			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		21C5234A29D9109B00A9D3AC /* iOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSApp.swift; sourceTree = "<group>"; };
 		21C5234C29D9109B00A9D3AC /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		21C5234E29D9109B00A9D3AC /* UnityAdsBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnityAdsBridge.swift; sourceTree = "<group>"; };
 		21C5235029D9109B00A9D3AC /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		54ACC2AA29D955870066A3C0 /* ComposeApp.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ComposeApp.framework; path = "../composeApp/build/xcode-frameworks/ComposeApp.framework"; sourceTree = "<group>"; };
 		7555BFEF242A651A00829A71 /* iosApp */ = {isa = PBXGroup; children = (
 			7555BFFD242A651A00829A71 /* iosApp */,
 			7555BFF3242A651A00829A71 /* Products */,
@@ -60,7 +43,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				54ACC2AB29D955870066A3C0 /* ComposeApp.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -85,7 +67,6 @@
 				7555BFF7242A651A00829A71 /* Sources */,
 				7555BFFA242A651A00829A71 /* Frameworks */,
 				7555BFFB242A651A00829A71 /* Resources */,
-				21C5235529D9109B00A9D3AC /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -153,7 +134,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cd \"$SRCROOT/../composeApp\"\n\"$SRCROOT/../gradlew\" :composeApp:embedAndSignAppleFrameworkForXcode -q\n";
+			shellScript = "if [ \"YES\" = \"$OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED\" ]; then\n  echo \"Skipping Gradle build task invocation due to OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED environment variable set to \\\"YES\\\"\"\n  exit 0\nfi\ncd \"$SRCROOT/../composeApp\"\n\"$SRCROOT/../gradlew\" :composeApp:embedAndSignAppleFrameworkForXcode\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -217,7 +198,12 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
-				FRAMEWORK_SEARCH_PATHS = "$(SRCROOT)/../composeApp/build/xcode-frameworks";
+				FRAMEWORK_SEARCH_PATHS = "$(SRCROOT)/../composeApp/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-framework",
+					ComposeApp,
+				);
 				INFOPLIST_FILE = iosApp/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -238,7 +224,12 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
-				FRAMEWORK_SEARCH_PATHS = "$(SRCROOT)/../composeApp/build/xcode-frameworks";
+				FRAMEWORK_SEARCH_PATHS = "$(SRCROOT)/../composeApp/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-framework",
+					ComposeApp,
+				);
 				INFOPLIST_FILE = iosApp/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
