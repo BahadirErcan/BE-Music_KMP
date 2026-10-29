@@ -1,7 +1,9 @@
 package com.be.music.data
 
+import androidx.room.ConstructedBy
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import androidx.room.RoomDatabaseConstructor
 import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.SQLiteConnection
@@ -21,6 +23,7 @@ import com.be.music.platform.createDatabaseBuilder
     exportSchema = false
 )
 @TypeConverters(Converters::class)
+@ConstructedBy(AppDatabaseConstructor::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun songDao(): SongDao
     abstract fun artistDao(): ArtistDao
@@ -69,3 +72,7 @@ abstract class AppDatabase : RoomDatabase() {
         fun getDatabase(): AppDatabase = INSTANCE
     }
 }
+
+/** Room-KMP: platform factory marker — KSP, her hedefte tual `AppDatabase_Impl` fabrikasını üretir. */
+@Suppress("NO_ACTUAL_FOR_EXPECT")
+expect object AppDatabaseConstructor : RoomDatabaseConstructor<AppDatabase>
