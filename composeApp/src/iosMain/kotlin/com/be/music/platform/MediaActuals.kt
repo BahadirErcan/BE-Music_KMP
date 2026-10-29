@@ -4,6 +4,7 @@ package com.be.music.platform
 
 import com.be.music.data.MusicRepository
 import kotlinx.cinterop.alloc
+import kotlinx.cinterop.BooleanVar
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
 import kotlinx.cinterop.value
@@ -13,7 +14,6 @@ import platform.Foundation.NSDocumentDirectory
 import platform.Foundation.NSFileManager
 import platform.Foundation.NSURL
 import platform.Foundation.NSUserDomainMask
-import platform.Foundation.URLForDirectory
 
 /** Şimdilik Documents dizinini gezer; metadata'sız (dosya adı = başlık). */
 actual object MusicScanner {
@@ -45,7 +45,7 @@ actual object MusicScanner {
         return memScoped {
             val isDir = alloc<BooleanVar>()
             NSFileManager.defaultManager.fileExistsAtPath(path, isDirectory = isDir.ptr)
-            isDir.ptr.value
+            isDir.value
         }
     }
 

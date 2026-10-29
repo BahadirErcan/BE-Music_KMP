@@ -1,3 +1,5 @@
+@file:OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
+
 package com.be.music.player
 
 import kotlinx.coroutines.CoroutineScope
@@ -12,10 +14,18 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import platform.AVFoundation.AVPlayer
 import platform.AVFoundation.AVPlayerItem
-import platform.AVFoundation.avPlayerItemDidPlayToEndTimeNotification
+import platform.AVFoundation.AVPlayerItemDidPlayToEndTimeNotification
+import platform.AVFoundation.currentItem
+import platform.AVFoundation.currentTime
+import platform.AVFoundation.duration
+import platform.AVFoundation.pause
+import platform.AVFoundation.play
+import platform.AVFoundation.replaceCurrentItemWithPlayerItem
+import platform.AVFoundation.seekToTime
 import platform.CoreMedia.CMTimeGetSeconds
 import platform.CoreMedia.CMTimeMakeWithSeconds
 import platform.Foundation.NSNotificationCenter
+import platform.Foundation.removeObserver
 import platform.Foundation.NSURL
 
 /**
@@ -83,7 +93,7 @@ class IosPlayerBridge : PlayerBridge, QueueAwarePlayerBridge {
     private fun observeItemEnd(item: AVPlayerItem) {
         itemObserver?.let { NSNotificationCenter.defaultCenter.removeObserver(it) }
         itemObserver = NSNotificationCenter.defaultCenter.addObserverForName(
-            avPlayerItemDidPlayToEndTimeNotification,
+            AVPlayerItemDidPlayToEndTimeNotification,
             item,
             null
         ) { _ ->

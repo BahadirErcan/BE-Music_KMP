@@ -17,11 +17,10 @@ import platform.Foundation.NSString
 import platform.Foundation.NSURL
 import platform.Foundation.NSUTF8StringEncoding
 import platform.Foundation.NSUserDomainMask
-import platform.Foundation.URLForDirectory
-import platform.Foundation.contentsOfDirectoryAtPath
 import platform.Foundation.create
 import platform.Foundation.dataWithContentsOfFile
 import platform.Foundation.timeIntervalSince1970
+import platform.Foundation.writeToFile
 
 private fun docsDir(): String {
     val url: NSURL? = NSFileManager.defaultManager.URLForDirectory(
@@ -47,7 +46,7 @@ actual object FS {
         return memScoped {
             val isDir = alloc<BooleanVar>()
             NSFileManager.defaultManager.fileExistsAtPath(path, isDirectory = isDir.ptr)
-            isDir.ptr.value
+            isDir.value
         }
     }
 

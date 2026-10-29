@@ -1,3 +1,5 @@
+@file:OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
+
 package com.be.music.platform
 
 import androidx.room.Room
@@ -8,7 +10,6 @@ import platform.Foundation.NSDocumentDirectory
 import platform.Foundation.NSFileManager
 import platform.Foundation.NSURL
 import platform.Foundation.NSUserDomainMask
-import platform.Foundation.URLForDirectory
 
 private fun databaseDir(): String {
     val url: NSURL? = NSFileManager.defaultManager.URLForDirectory(
